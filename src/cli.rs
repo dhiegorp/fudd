@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
 
-pub const PHRASES: Vec<&str> = vec![
+pub const PHRASES: [&'static str; 8] = [
     "Wabbits wove cawwots. Pwetty cwafty, eh?",
     "You're the wabbit in disguise. Off with it, you twickster.",
     "Ooh, you double-cwossing wabbit! You tweacherous miscweant!", 
