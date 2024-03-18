@@ -2,14 +2,14 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
 
-const PHRASES: Vec<&str> = vec![
+pub const PHRASES: Vec<&str> = vec![
     "Wabbits wove cawwots. Pwetty cwafty, eh?",
     "You're the wabbit in disguise. Off with it, you twickster.",
     "Ooh, you double-cwossing wabbit! You tweacherous miscweant!", 
     "Shhhh... Be vewy vewy quiet. i`m hunting wabbits.",
     "KILL THE WABBIT!!!",
     "ITS WABBIT SEASON",
-    "Scwewy Wabbit!" 
+    "Scwewy Wabbit!", 
     "wascawwy wabbit!"
 ];
 
