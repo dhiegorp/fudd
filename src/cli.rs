@@ -63,10 +63,10 @@ pub enum FuddCommands {
 #[command(version, about, long_about = None)]
 pub struct FuddConnect {
     #[arg(short, long)]
-    uri: Option<String>,
+    pub uri: Option<String>,
 
     #[command(subcommand)]
-    subcommand: Option<FuddCommands>,
+    pub subcommand: FuddCommands,
 }
 
 #[cfg(test)]
