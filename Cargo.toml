@@ -6,11 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+amiquip = "0.4.2"
 clap = { version = "4.5.2", features = ["derive", "string"] }
-lapin = "2.3.1"
 rand = "0.8.5"
-tokio = "1.36.0"
-tokio-amqp = "2.0.0"
 
 
 
