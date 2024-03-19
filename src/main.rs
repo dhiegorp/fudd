@@ -1,4 +1,3 @@
-
 mod cli;
 use crate::cli::{FuddConnect, FuddCommands};
 use clap::Parser;
@@ -16,7 +15,7 @@ pub fn main() {
     let parsed_args = FuddConnect::parse();
     
     match &parsed_args.subcommand {
-        FuddCommands::Get{queue, message_qt, output, ack} =>  get_messages(&queue, message_qt, &output, ack),
+        FuddCommands::Get{queue, message_qt, output, ack} =>  get_messages(queue, message_qt, output, ack),
         FuddCommands::Consume{..}=> todo!(),
         FuddCommands::Publish{..} => todo!(),
     }
