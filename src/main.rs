@@ -98,15 +98,11 @@ fn save(message: Get, output_dir: &PathBuf, filename: &str) -> FuddResult<PathBu
 
 fn get_messages(connection: &mut Connection, queue: &str, message_qt: &usize, output:&PathBuf, ack: &bool) -> FuddResult<()>{
 
-    println!("hey");
     if *message_qt < 1 {
        return Err(FuddErrors::InvalidMessageRangeError{qt: *message_qt});
    }
    
-   println!("testing output directory");
    if enable_output_directory(output)? {
-       println!("output directory is OK?");
-      //if let Ok(outdir) = enable_output_directory(output) {
         
        let channel = connection.open_channel(None).context(ChannelOpening)?;
        let mut qt:usize = 0;
@@ -115,30 +111,31 @@ fn get_messages(connection: &mut Connection, queue: &str, message_qt: &usize, ou
         for i in 0..*message_qt {
             println!("trying to get message {} ", &i);
             //get messages from queue
-            if let Ok(message) = channel.basic_get(queue, !ack) {
+            if let Ok(message) = channel.basic_get(queue, *ack) {
                 //save message to output
                 if let Some(available_message) = message {
                     if let Ok(new_file_path) = save(available_message, output, Uuid::new_v4().to_string().as_str()) {
-                        print!("Saving message to '{}'... ", new_file_path.display());
+                        print!("\tSaving message to '{}'... ", new_file_path.display());
                         if new_file_path.exists() {
                             print!("[OK]\n");
                         } else {
                             print!("[ERR]\n");
-                            eprintln!("An error occurred saving a message to file '{}'", new_file_path.display())
+                            eprintln!("\n\tAn error occurred saving a message to file '{}'", new_file_path.display())
                         }
                     }
                 } else {
-                    eprintln!("GET Message is not available.");
+                    eprintln!("\tNo message left on '{}'! Aborting...", queue);
+                    break;
                 }
             } else {
-                println!("\nNo messages left on queue {}. Aborting...", queue);
+                println!("\n\tNo messages left on queue {}. Aborting...", queue);
                 break;
             }            
         }
 
         drop(channel);
    }
-
+    
   Ok(()) 
 
 }
@@ -177,10 +174,12 @@ fn publish_messages(connection: &mut Connection, exchange: &str, routing_key: &s
             print!("\n\tReading contents from '{}'...", file_path.display());
             if let Ok(content) = get_file_content(file_path) {
                 //publish message
-                print!("Done.\tPublishing message...");
+                print!(" Publishing message...");
                 let _ = channel.basic_publish(exchange, Publish::new(content.as_bytes(), routing_key));
                 pub_count += 1;
-                print!("Done.\n");
+                print!("[OK].\n");
+            } else {
+                print!("[ERR].\n");
             }
         });
         
@@ -291,31 +290,31 @@ fn get_file_content(path: &PathBuf) -> FuddResult<String> {
 pub fn main() -> FuddResult<()> {
     
     let parsed_args = FuddConnect::parse();
-    println!("\n\t{}", get_random_phrase());
+    println!("\n\t{}\n", get_random_phrase());
     //open connection    
     match amiquip::Connection::insecure_open(&parsed_args.uri) {
         Ok(mut connection) => {
+            println!("[connected]");
            match &parsed_args.subcommand {
                 FuddCommands::Get{queue, message_qt, output, ack} => {
-                    println!("GET WAS FOUND");
-                    let _ = get_messages(&mut connection, queue, message_qt, output, ack);
-                    return Ok(());
-
+                    println!("\n[basic_get]");
+                    return get_messages(&mut connection, queue, message_qt, output, ack);
                 },
-                FuddCommands::Consume{queue, output, ack}=> todo!(),//consume_messages(queue, output, ack),
+                FuddCommands::Consume{queue, output, ack}=> return Ok(()),//consume_messages(queue, output, ack),
                 FuddCommands::Publish{exchange, routing_key, input} => { 
-                    println!("PUBLISH DETECTED");
+                    println!("\n[publish]");
                     match publish_messages(&mut connection, exchange, routing_key, input) {
-                        Ok(msg_qtd) => println!("{} messages sent in total", msg_qtd),
-                        Err(e) => eprintln!("{:?}", e),
+                        Ok(msg_qtd) => println!("\t\n{} messages sent in total\n", msg_qtd),
+                        Err(e) => eprintln!("{}", e),
                     }
-                    return Ok(());
+                    return Ok(())
                 },
             }
            drop(connection);
+           println!("[connection closed]");
         }, 
         Err(e) => {
-            eprintln!("{:?}", e);
+            eprintln!("{}", e);
         }
     }
     Ok(())
